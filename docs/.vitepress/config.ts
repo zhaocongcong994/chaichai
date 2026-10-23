@@ -128,10 +128,11 @@ export default defineConfig({
     ],
     search: { provider: "local" },
     socialLinks: [
-      { icon: "github", link: "https://github.com/hubooooooo/chaichai" },
+      { icon: "github", link: "https://github.com/zhaocongcong994/chaichai" },
     ],
     editLink: {
-      pattern: "https://github.com/hubooooooo/chaichai/edit/main/docs/:path",
+      pattern:
+        "https://github.com/zhaocongcong994/chaichai/edit/main/docs/:path",
     },
     footer: {
       message: "Released under the MIT License.",
