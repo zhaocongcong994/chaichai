@@ -44,7 +44,10 @@ export default defineConfig({
         docFooter: { prev: "上一页", next: "下一页" },
         search: { provider: "local" },
         socialLinks: [
-          { icon: "github", link: "https://github.com/hubooooooo/chaichai" },
+          {
+            icon: "github",
+            link: "https://github.com/zhaocongcong994/chaichai",
+          },
         ],
         footer: {
           message: "基于 MIT 许可证发布。",
