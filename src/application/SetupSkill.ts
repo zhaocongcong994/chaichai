@@ -28,6 +28,35 @@ export const MANAGED_SKILL_FILES = [
   "references/evidence-workflows.md",
 ] as const;
 
+const CHINESE_SKILL_BUNDLE = `${PRODUCT_IDENTITY.skillName}-zh`;
+
+const localePrefersChinese = (
+  environment: Readonly<NodeJS.ProcessEnv>,
+): boolean => {
+  const locale =
+    environment.LC_ALL ?? environment.LC_MESSAGES ?? environment.LANG ?? "";
+  return /^zh(?:[-_.]|$)/iu.test(locale);
+};
+
+/** Locale-selected managed skill bundle shipped under skills/. */
+export const managedSkillBundleName = (
+  environment: Readonly<NodeJS.ProcessEnv> = process.env,
+): string =>
+  localePrefersChinese(environment)
+    ? CHINESE_SKILL_BUNDLE
+    : PRODUCT_IDENTITY.skillName;
+
+/** Bundles accepted as canonical, selected locale first so doctor stays quiet. */
+const shippedSkillBundles = (
+  environment: Readonly<NodeJS.ProcessEnv>,
+): readonly [string, ...string[]] =>
+  managedSkillBundleName(environment) === PRODUCT_IDENTITY.skillName
+    ? [PRODUCT_IDENTITY.skillName]
+    : [managedSkillBundleName(environment), PRODUCT_IDENTITY.skillName];
+
+const skillBundleFile = (bundle: string, relativePath: string): URL =>
+  new URL(`../../skills/${bundle}/${relativePath}`, import.meta.url);
+
 export const isManagedSkillManifest = (content: string): boolean =>
   content.startsWith(`---\nname: ${PRODUCT_IDENTITY.skillName}\n`) ||
   content.startsWith(`---\r\nname: ${PRODUCT_IDENTITY.skillName}\r\n`);
@@ -68,6 +97,7 @@ const readSkillFileState = async (
 
 interface CanonicalSkillFile {
   readonly content: string;
+  readonly candidates: readonly string[];
   readonly destination: string;
   readonly original: SkillFileState | undefined;
 }
@@ -242,15 +272,28 @@ const canonicalSkillFiles = async (
       ({ path: root }) =>
         MANAGED_SKILL_FILES.map(async (relativePath) => {
           const destination = join(root, relativePath);
+          const content = await readFile(
+            skillBundleFile(managedSkillBundleName(environment), relativePath),
+            "utf8",
+          );
+          const candidates = [
+            content,
+            ...(await Promise.all(
+              shippedSkillBundles(environment)
+                .slice(1)
+                .map(
+                  async (bundle) =>
+                    await readFile(
+                      skillBundleFile(bundle, relativePath),
+                      "utf8",
+                    ),
+                ),
+            )),
+          ];
           return {
             destination,
-            content: await readFile(
-              new URL(
-                `../../skills/${PRODUCT_IDENTITY.skillName}/${relativePath}`,
-                import.meta.url,
-              ),
-              "utf8",
-            ),
+            content,
+            candidates,
             original: await readOptionalSkillState(destination, resources),
           };
         }),
@@ -274,7 +317,10 @@ export const canonicalSkillNeedsInstall = async (
         platform,
         resources,
       )
-    ).some(({ content, original }) => original?.content !== content);
+    ).some(
+      ({ candidates, original }) =>
+        original === undefined || !candidates.includes(original.content),
+    );
   } catch (cause: unknown) {
     if (
       cause instanceof RegularFileCleanupFailure ||
@@ -332,7 +378,8 @@ export const installCanonicalSkill = async (
       resources,
     );
     const changed = canonical.filter(
-      ({ content, original }) => original?.content !== content,
+      ({ candidates, original }) =>
+        original === undefined || !candidates.includes(original.content),
     );
     if (changed.length === 0) return ok("unchanged");
 

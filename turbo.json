@@ -183,7 +183,8 @@
         "package-lock.json",
         "scripts/generate-skill-metadata.mjs",
         "scripts/lib/generated-file.mjs",
-        ".agents/skills/reverse-engineer-anything/**"
+        ".agents/skills/reverse-engineer-anything/**",
+        ".agents/skills/reverse-engineer-anything-zh/**"
       ],
       "outputs": ["skills/**"]
     },

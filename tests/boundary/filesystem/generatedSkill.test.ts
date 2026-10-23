@@ -11,6 +11,8 @@ const exec = promisify(execFile);
 const repositoryRoot = fileURLToPath(new URL("../../..", import.meta.url));
 const authored =
   '---\nname: reverse-engineer-anything\nmetadata:\n  version: "33"\n---\n\n# Instructions\n\nInspect the caller-selected artifact.\n';
+const authoredChinese =
+  '---\nname: reverse-engineer-anything\nmetadata:\n  version: "33"\n---\n\n# 说明\n\n检查调用方选定的目标。\n';
 
 async function fixture(eol = "\n") {
   const root = await createTestTempDirectory("rea-generated-skill-");
@@ -23,7 +25,12 @@ async function fixture(eol = "\n") {
   }
   const sourceRoot = join(root, ".agents/skills/reverse-engineer-anything");
   const outputRoot = join(root, "skills/reverse-engineer-anything");
+  const chineseSourceRoot = join(
+    root,
+    ".agents/skills/reverse-engineer-anything-zh",
+  );
   await mkdir(join(sourceRoot, "references"), { recursive: true });
+  await mkdir(join(chineseSourceRoot, "references"), { recursive: true });
   await mkdir(join(root, "dist"));
   await writeFile(join(root, "package.json"), '{"type":"module"}\n');
   await writeFile(
@@ -34,6 +41,14 @@ async function fixture(eol = "\n") {
   await writeFile(
     join(sourceRoot, "references/guide.md"),
     `# Guide${eol}Preserve evidence.${eol}`,
+  );
+  await writeFile(
+    join(chineseSourceRoot, "SKILL.md"),
+    authoredChinese.replaceAll("\n", eol),
+  );
+  await writeFile(
+    join(chineseSourceRoot, "references/guide.md"),
+    `# 指南${eol}保留证据。${eol}`,
   );
   const identity = async (count: number, digest: string) =>
     writeFile(

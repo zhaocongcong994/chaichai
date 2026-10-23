@@ -6,6 +6,52 @@ export default defineConfig({
     "Reverse engineer binaries, applications, and runtime behavior with one CLI and MCP server.",
   lang: "en-US",
   base: "/chaichai/",
+  locales: {
+    root: {
+      label: "English",
+      lang: "en-US",
+    },
+    zh: {
+      label: "简体中文",
+      lang: "zh-CN",
+      link: "/zh/",
+      title: "ChaiChai 拆拆",
+      description: "用一个 CLI 和 MCP 服务器，拆开二进制、应用和运行时行为。",
+      themeConfig: {
+        nav: [
+          { text: "安装与设置", link: "/zh/installation" },
+          { text: "常见问题", link: "/zh/faq" },
+        ],
+        sidebar: [
+          {
+            text: "入门",
+            items: [
+              { text: "安装与设置", link: "/zh/installation" },
+              { text: "常见问题", link: "/zh/faq" },
+            ],
+          },
+          {
+            text: "深入参考（英文）",
+            collapsed: true,
+            items: [
+              { text: "客户端配置", link: "/client-configuration" },
+              { text: "CLI 与证据", link: "/cli" },
+              { text: "MCP 契约", link: "/mcp-contracts" },
+            ],
+          },
+        ],
+        outline: { label: "本页内容" },
+        docFooter: { prev: "上一页", next: "下一页" },
+        search: { provider: "local" },
+        socialLinks: [
+          { icon: "github", link: "https://github.com/hubooooooo/chaichai" },
+        ],
+        footer: {
+          message: "基于 MIT 许可证发布。",
+        },
+      },
+    },
+  },
   themeConfig: {
     nav: [
       { text: "Get started", link: "/installation" },
